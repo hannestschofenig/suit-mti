@@ -75,16 +75,12 @@ This document defines algorithm profiles for SUIT manifest parsers and authors t
 
 This document defines the following MTI profiles for constrained environments:
 
-* One symmetric MTI profile
-* Two "current" constrained asymmetric MTI profiles
-* Two "current" Authenticated Encryption with Associated Data (AEAD) asymmetric MTI profiles
-* One "future" constrained asymmetric MTI profile
+* One symmetric profile
+* Two constrained asymmetric profiles
+* Two asymmetric profiles utilizing Authenticated Encryption with Associated Data (AEAD) ciphers
+* One constrained asymmetric profile utilizing a hash-based signature scheme
 
-The terms "current" and "future" distinguish between traditional cryptographic algorithms and those believed to be secure against both classical and quantum computer-based attacks, respectively.
-
-At least one algorithm in each category must be Federal Information Processing Standards (FIPS)-validated.
-
-Due to the asymmetric nature of SUIT deployments—where manifest authors are typically resource-rich and recipients are resource-constrained—the cryptographic requirements differ for each role.
+Due to the asymmetric nature of SUIT deployments (where manifest authors are typically resource-rich and recipients are resource-constrained) the cryptographic requirements differ for each role.
 
 This specification uses AES-CTR in combination with a digest algorithm, as defined in {{-ctrcbc}}, to support use cases that require out-of-order block reception and decryption-capabilities not offered by AEAD algorithms. For further discussion of these constrained use cases, see {{aes-ctr-payloads}}. Other SUIT use cases (see {{I-D.ietf-suit-manifest}}) may define different profiles.
 
@@ -102,12 +98,12 @@ This specification uses the following abbreviations:
 - CBOR Object Signing and Encryption (COSE)
 - Concise Data Definition Language (CDDL)
 - Elliptic Curve Diffie-Hellman Ephemeral-Static (ECDH-ES)  
-- Federal Information Processing Standards (FIPS)
 - Hash-based Message Authentication Code (HMAC)
-- Hierarchical Signature System - Leighton-Micali Signature (HSS-LMS)
+- Hierarchical Signature System / Leighton-Micali Signature (HSS/LMS)
 - Software Updates for Internet of Things (SUIT)
 
 SUIT specifically addresses the requirements of constrained devices and networks, as described in {{RFC9019}}.
+The terms "Author", "Recipient", and "Manifest" are defined in {{I-D.ietf-suit-manifest}}. 
 
 # Profiles
 
@@ -123,11 +119,13 @@ Since these algorithm identifiers are used in the context of the IETF SUIT manif
 
 The use of the profiles by authors and recipients is based on the following assumptions:
 
-- Recipients MAY choose which MTI profile they wish to implement. It is RECOMMENDED that they implement the "Future" Asymmetric MTI profile. Recipients MAY implement any number of other profiles not defined in this document. Recipients MAY choose not to implement encryption and the corresponding key exchange algorithms if they do not intend to support encrypted payloads.
+- Recipients MAY choose which MTI profile they wish to implement. It is RECOMMENDED that they implement the `suit-sha256-hsslms-a256kw-a256ctr` profile. Recipients MAY implement any number of other profiles not defined in this document. Recipients MAY choose not to implement encryption and the corresponding key exchange algorithms if they do not intend to support encrypted payloads.
 
-- Authors MUST implement all MTI profiles. Authors MAY implement any number of additional profiles.
+- Authors MUST implement all profiles with a status set to 'MANDATORY' in {{iana}}. Authors MAY implement any number of additional profiles.
 
-## Symmetric MTI profile: suit-sha256-hmac-a128kw-a128ctr {#suit-sha256-hmac-a128kw-a128ctr}
+## Profile `suit-sha256-hmac-a128kw-a128ctr` {#suit-sha256-hmac-a128kw-a128ctr}
+
+This profile only offers support for symmetric cryptographic algorithms. 
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
@@ -136,7 +134,9 @@ The use of the profiles by authors and recipients is based on the following assu
 | Key Exchange | A128KW Key Wrap | -3 |
 | Encryption | A128CTR | -65534 |
 
-## Current Constrained Asymmetric MTI Profile 1: suit-sha256-esp256-ecdh-a128ctr {#suit-sha256-esp256-ecdh-a128ctr}
+## Profile `suit-sha256-esp256-ecdh-a128ctr` {#suit-sha256-esp256-ecdh-a128ctr}
+
+This profile supports asymmetric algorithms for use with constrained devices. 
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
@@ -145,7 +145,9 @@ The use of the profiles by authors and recipients is based on the following assu
 | Key Exchange | ECDH-ES + A128KW | -29 |
 | Encryption | A128CTR | -65534 |
 
-## Current Constrained Asymmetric MTI Profile 2: suit-sha256-ed25519-ecdh-a128ctr {#suit-sha256-ed25519-ecdh-a128ctr}
+## Profile `suit-sha256-ed25519-ecdh-a128ctr` {#suit-sha256-ed25519-ecdh-a128ctr}
+
+This profile supports an alternative choice of asymmetric algorithms for use with constrained devices. 
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
@@ -154,7 +156,9 @@ The use of the profiles by authors and recipients is based on the following assu
 | Key Exchange | ECDH-ES + A128KW | -29 |
 | Encryption | A128CTR | -65534 |
 
-## Current AEAD Asymmetric MTI Profile 1: suit-sha256-esp256-ecdh-a128gcm {#suit-sha256-esp256-ecdh-a128gcm}
+## Profile `suit-sha256-esp256-ecdh-a128gcm` {#suit-sha256-esp256-ecdh-a128gcm}
+
+This profile supports asymmetric algorithms in combination with AEAD algorithms.
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
@@ -163,7 +167,9 @@ The use of the profiles by authors and recipients is based on the following assu
 | Key Exchange | ECDH-ES + A128KW | -29 |
 | Encryption | A128GCM | 1 |
 
-## Current AEAD Asymmetric MTI Profile 2: suit-sha256-ed25519-ecdh-chacha-poly {#suit-sha256-ed25519-ecdh-chacha-poly}
+## Profile `suit-sha256-ed25519-ecdh-chacha-poly` {#suit-sha256-ed25519-ecdh-chacha-poly}
+
+This profile also supports asymmetric algorithms with AEAD algorithms but offers an alternative to `suit-sha256-esp256-ecdh-a128gcm`.
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
@@ -172,17 +178,19 @@ The use of the profiles by authors and recipients is based on the following assu
 | Key Exchange | ECDH-ES + A128KW | -29 |
 | Encryption | ChaCha20/Poly1305 | 24 |
 
-## Future Constrained Asymmetric MTI Profile: suit-sha256-hsslms-a256kw-a256ctr {#suit-sha256-hsslms-a256kw-a256ctr}
+## Profile `suit-sha256-hsslms-a256kw-a256ctr` {#suit-sha256-hsslms-a256kw-a256ctr}
+
+This profile utilzes a stateful hash-based signature algorithm, namely the Hierarchical Signature System / Leighton-Micali Signature (HSS/LMS), as a unique alternative to the  profiles listed above.
+
+A note regarding the use of the HSS/LMS: The decision as to how deep the tree is, is a decision that affects authoring tools only (see {{RFC8778}}).
+Verification is not affected by the choice of the "W" parameter, but the size of the signature is affected. To support the long lifetimes required by IoT devices, it is RECOMMENDED to use trees with greater height (see Section 2.2 of {{RFC8778}}).
 
 | Algorithm Type | Algorithm | COSE Key |
 |============|
 | Digest | SHA-256 | -16 |
-| Authentication | HSS-LMS | -46 |
+| Authentication | HSS/LMS | -46 |
 | Key Exchange | A256KW | -5 |
 | Encryption | A256CTR | -65532 |
-
-A note regarding the use of the Hierarchical Signature System - Leighton-Micali Signature (HSS-LMS): The decision as to how deep the tree is, is a decision that affects authoring tools only (see {{RFC8778}}).
-Verification is not affected by the choice of the "W" parameter, but the size of the signature is affected. To support the long lifetimes required by IoT devices, it is RECOMMENDED to use trees with greater height (see Section 2.2 of {{RFC8778}}).
 
 # Reporting Profiles
 
@@ -192,7 +200,7 @@ where switching to a different algorithm profile is not possible and where SUIT 
 
 # Security Considerations {#security}
 
-Payload encryption is often used to protect Intellectual Property (IP) and Personally Identifying Information (PII) in transit. The primary function of payload in SUIT is to act as a defense against passive IP and PII snooping. By encrypting payloads, confidential IP and PII can be protected during distribution. However, payload encryption of firmware or software updates of a commodity device is not a cybersecurity defense against targetted attacks on that device.
+Payload encryption is used to protect machine learning models, specifical algorithms and Personally Identifying Information (PII) in transit. The primary function of payload in SUIT is to act as a defense against snooping. By encrypting payloads, confidential content can be protected during distribution. However, payload encryption of firmware or software updates of a commodity device is not a cybersecurity defense against targetted attacks on that device.
 
 ## Payload Encryption as Part of a Defense-in-Depth Strategy
 
@@ -211,13 +219,14 @@ Due to these factors, payload encryption serves to limit the pool of attackers t
 
 AES-CTR mode with a digest is specified, see {{-ctrcbc}}. All of the AES-CTR security considerations in {{-ctrcbc}} apply. See {{I-D.ietf-suit-firmware-encryption}} for additional background information.
 
-# IANA Considerations
+# IANA Considerations {#iana}
 
-IANA is requested to create a page for COSE Algorithm Profiles within
-the category for Software Update for the Internet of Things (SUIT)
+IANA is requested to create a page for "COSE SUIT Algorithm Profiles" within
+the category for Software Update for the Internet of Things (SUIT). IANA
+is also requested to create a registry for "COSE SUIT Algorithm Profiles"
+within this page.
 
-IANA is also requested to create a registry for COSE Algorithm Profiles
-within this page. The initial content of the registry is:
+The initial content of the "COSE SUIT Algorithm Profiles" registry is:
 
 ## Profile: `suit-sha256-hmac-a128kw-a128ctr`
 
@@ -285,13 +294,19 @@ within this page. The initial content of the registry is:
 - Descriptor Array: `[-16, -46, -5, -65532]`  
 - Reference: Section 3.6
 
-New entries to this registry require Standards Action.
+While most profile attributes are self-explanatory, the status field warrants a brief explanation.
+This field can take one of three values: MANDATORY, NOT RECOMMENDED, or OPTIONAL.
 
-A recipient device that claims conformance to this document will have implemented at least one of the above algorithms.
+- MANDATORY indicates that the profile is mandatory to implement (MTI) for manifest authors.
+- NOT RECOMMENDED means that the profile should generally be avoided in new implementations.
+- OPTIONAL suggests that support for the profile is permitted but not required; it is not part of the MTI set.
 
-As time progresses, if entries are removed from mandatory status, they will become SHOULD, MAY and then possibly NOT RECOMMENDED for new implementation.  However, as it may be impossible to update the SUIT manifest processor in the field, support for all relevant algorithms will almost always be required by authoring tools.
+Adding new profiles or updating the status of existing profiles requires Standards Action.
 
-When new algorithms are added by subsequent documents, the device and authoring tools will then claim conformance to those new documents.
+As time progresses, algorithm profiles may loose their MANDATORY status. Then, their status will become
+either OPTIONAL or NOT RECOMMENDED for new implementations. However, as it may be impossible to update
+the SUIT manifest processor in the field, support for all relevant algorithms will almost always be
+required by authoring tools.
 
 --- back
 
@@ -307,4 +322,4 @@ To be valid, the following CDDL MUST have the COSE CDDL appended to it. The COSE
 
 # Acknowledgments
 
-We would like to specifically thank Magnus Nyström, Deb Cooley, Michael Richardson, Russ Housley, Michael B. Jones, Henk Birkholz, Linda Dunbar, Jouni Korhonen, Lorenzo Corneo and Hannes Tschofenig for their review comments.
+We would like to specifically thank Magnus Nyström, Deb Cooley, Michael Richardson, Russ Housley, Michael B. Jones, Henk Birkholz, Mohamed Boucadair, Linda Dunbar, Jouni Korhonen, Lorenzo Corneo and Hannes Tschofenig for their review comments.
